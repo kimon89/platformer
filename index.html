@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Phaser - Making your first game, part 9</title>
+    <script type="text/javascript" src="/js/phaser.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="phaser-example"></div>
+<script type="text/javascript">
+    var game = new Phaser.Game(window.innerWidth, 600, Phaser.AUTO, 'phaser-example', { preload: preload, create: create, update: update, render: render });
+
+    function preload() {
+
+        //  Tilemaps are split into two parts: The actual map data (usually stored in a CSV or JSON file)
+        //  and the tileset/s used to render the map.
+
+        //  Here we'll load the tilemap data. The first parameter is a unique key for the map data.
+
+        //  The second is a URL to the JSON file the map data is stored in. This is actually optional, you can pass the JSON object as the 3rd
+        //  parameter if you already have it loaded (maybe via a 3rd party source or pre-generated). In which case pass 'null' as the URL and
+        //  the JSON object as the 3rd parameter.
+
+        //  The final one tells Phaser the foramt of the map data, in this case it's a JSON file exported from the Tiled map editor.
+        //  This could be Phaser.Tilemap.CSV too.
+
+        this.game.load.spritesheet('player', 'assets/spritesheet_players-small.png', 64, 74);
+
+
+        game.load.tilemap('test', 'assets/level-small.json', null, Phaser.Tilemap.TILED_JSON);
+
+        //  Next we load the tileset. This is just an image, loaded in via the normal way we load images:
+
+        game.image = game.load.image('tiles', 'assets/spritesheet_ground-small.png');
+
+    }
+
+    var map;
+    var layer;
+
+    function create() {
+
+        this.stage.backgroundColor = '#787888';
+
+        //  The 'mario' key here is the Loader key given in game.load.tilemap
+        map = this.add.tilemap('test');
+
+        //  The first parameter is the tileset name, as specified in the Tiled map editor (and in the tilemap json file)
+        //  The second parameter maps this name to the Phaser.Cache key 'tiles'
+        map.addTilesetImage('ground', 'tiles');
+
+        //  Creates a layer from the World1 layer in the map data.
+        //  A Layer is effectively like a Phaser.Sprite, so is added to the display list.
+        this.groundLayer = map.createLayer('GroundLayer');
+
+        map.setCollisionBetween(1, 100, true, 'GroundLayer');
+
+
+        this.sprite = this.add.sprite(50, this.world.centerY, 'player');
+        this.physics.arcade.enable(this.sprite);
+        this.sprite.body.gravity.y=2000;
+        //sprite.body.gravity.x = 20;
+        //sprite.body.velocity.x = 100;
+
+        //  This resizes the game world to match the layer dimensions
+        this.groundLayer.resizeWorld();
+
+
+        this.camera.follow(this.sprite);
+        this.cursors = this.input.keyboard.createCursorKeys();
+
+
+
+    }
+
+    function update() {
+
+        this.physics.arcade.collide(this.sprite, this.groundLayer);
+
+        this.sprite.body.velocity.x = 0;
+
+        if (this.cursors.up.isDown){
+            this.sprite.body.velocity.y = -500;
+        }
+        if (this.cursors.right.isDown){
+            this.sprite.body.velocity.x = 300;
+        }
+
+        if (this.cursors.left.isDown){
+            this.sprite.body.velocity.x = -300;
+        }
+
+    }
+
+    function render() {
+
+        //this.debug.cameraInfo(this.camera, 32, 32);
+
+    }
+
+</script>
+
+</body>
+</html>
